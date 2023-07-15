@@ -6,6 +6,8 @@ require (
 	github.com/99designs/gqlgen v0.17.34
 	github.com/gorilla/mux v1.8.0
 	github.com/vektah/gqlparser/v2 v2.5.4
+	gorm.io/driver/sqlserver v1.5.1
+	gorm.io/gorm v1.25.2
 )
 
 require (
@@ -19,6 +21,4 @@ require (
 	github.com/microsoft/go-mssqldb v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
-	gorm.io/driver/sqlserver v1.5.1 // indirect
-	gorm.io/gorm v1.25.2 // indirect
 )

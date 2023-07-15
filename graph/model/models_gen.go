@@ -2,19 +2,38 @@
 
 package model
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type Employee struct {
+	ID           string `json:"id"`
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	Email        string `json:"email"`
+	Dob          string `json:"dob"`
+	DepartmentID string `json:"departmentID"`
+	Position     string `json:"position"`
+	CreatedAt    string `json:"createdAt"`
+	UpdatedAt    string `json:"updatedAt"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type NewEmployee struct {
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	Email        string `json:"email"`
+	Dob          string `json:"dob"`
+	DepartmentID string `json:"departmentID"`
+	Position     string `json:"position"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type UpdateEmployee struct {
+	FirstName    *string `json:"firstName,omitempty"`
+	LastName     *string `json:"lastName,omitempty"`
+	Username     *string `json:"username,omitempty"`
+	Password     *string `json:"password,omitempty"`
+	Email        *string `json:"email,omitempty"`
+	Dob          *string `json:"dob,omitempty"`
+	DepartmentID *string `json:"departmentID,omitempty"`
+	Position     *string `json:"position,omitempty"`
 }

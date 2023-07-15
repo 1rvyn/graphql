@@ -1,29 +1,46 @@
+type Query {
+  employees: [Employee!]!
+  employee(id: ID!): Employee
+}
+
 type Mutation {
-	createEmployee(input: EmployeeInput): Employee
-  }
-  
-  input EmployeeInput {
-	firstName: String!
-	lastName: String!
-	username: String!
-	password: String!
-	email: String!
-	dob: String!
-	departmentID: ID!
-	position: String!
-  }
-  
-  type Employee {
-	id: ID!
-	firstName: String!
-	lastName: String!
-	username: String!
-	password: String!
-	email: String!
-	dob: String!
-	departmentID: ID!
-	position: String!
-	createdAt: String!
-	updatedAt: String!
-  }
-  
+  createEmployee(input: NewEmployee!): Employee!
+  updateEmployee(id: ID!, input: UpdateEmployee!): Employee!
+  deleteEmployee(id: ID!): Boolean
+}
+
+type Employee {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  username: String!
+  password: String!
+  email: String!
+  dob: String!
+  departmentID: ID!
+  position: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+input NewEmployee {
+  firstName: String!
+  lastName: String!
+  username: String!
+  password: String!
+  email: String!
+  dob: String!
+  departmentID: ID!
+  position: String!
+}
+
+input UpdateEmployee {
+  firstName: String
+  lastName: String
+  username: String
+  password: String
+  email: String
+  dob: String
+  departmentID: ID
+  position: String
+}

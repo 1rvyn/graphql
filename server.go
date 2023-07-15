@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/1rvyn/graphql-service/database"
 	"github.com/1rvyn/graphql-service/graph"
 	"github.com/1rvyn/graphql-service/routes"
 
@@ -21,6 +22,8 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
+
+	database.ConnectDb()
 
 	router := mux.NewRouter()
 

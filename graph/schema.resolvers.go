@@ -10,6 +10,7 @@ import (
 	"github.com/1rvyn/graphql-service/database"
 	"github.com/1rvyn/graphql-service/graph/model"
 	"github.com/1rvyn/graphql-service/models"
+	"github.com/1rvyn/graphql-service/utils"
 	"gorm.io/gorm"
 )
 
@@ -44,7 +45,7 @@ func (r *mutationResolver) CreateEmployee(ctx context.Context, input model.NewEm
 		FirstName:    input.FirstName,
 		LastName:     input.LastName,
 		Username:     input.Username,
-		Password:     input.Password,
+		Password:     string(utils.HashPassword(input.Password)),
 		Email:        input.Email,
 		DOB:          dob,
 		DepartmentID: uint(departmentID),

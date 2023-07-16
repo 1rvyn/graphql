@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -39,7 +40,6 @@ func ConnectDb() {
 
 	db.Logger = logger.Default.LogMode(logger.Info)
 	log.Println("Running Migrations")
-	// TODO: add migrations
 
 	err = db.AutoMigrate(&models.Employee{}, &models.Department{})
 	if err != nil {
@@ -47,4 +47,25 @@ func ConnectDb() {
 	}
 
 	Database = Dbinstance{Db: db}
+
+	// Create some initial departments
+	departments := []models.Department{
+		{Name: "Software", Description: "This is the software department"},
+		{Name: "Human Resources", Description: "This is the human resources department"},
+		{Name: "Personel", Description: "This is the personel department"},
+	}
+
+	for _, dept := range departments {
+		// Check if the department already exists
+		var existingDept models.Department
+		result := db.First(&existingDept, "name = ?", dept.Name)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// If the department doesn't exist, create it
+			if err := db.Create(&dept).Error; err != nil {
+				log.Println("Failed to create department:", err)
+			} else {
+				log.Println("Created department:", dept.Name)
+			}
+		}
+	}
 }

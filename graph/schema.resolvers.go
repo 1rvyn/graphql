@@ -45,7 +45,7 @@ func (r *mutationResolver) CreateEmployee(ctx context.Context, input model.NewEm
 		FirstName:    input.FirstName,
 		LastName:     input.LastName,
 		Username:     input.Username,
-		Password:     string(utils.HashPassword(input.Password)), // special JUICE (isnt this super clean?)
+		Password:     utils.HashPassword(input.Password), // special JUICE (isnt this super clean?)
 		Email:        input.Email,
 		DOB:          dob,
 		DepartmentID: uint(departmentID),
@@ -62,7 +62,7 @@ func (r *mutationResolver) CreateEmployee(ctx context.Context, input model.NewEm
 		FirstName:    employee.FirstName,
 		LastName:     employee.LastName,
 		Username:     employee.Username,
-		Password:     employee.Password,
+		Password:     string(employee.Password),
 		Email:        employee.Email,
 		Dob:          employee.DOB.Format("2006-01-02"),
 		DepartmentID: strconv.Itoa(int(employee.DepartmentID)),
@@ -99,7 +99,7 @@ func (r *mutationResolver) UpdateEmployee(ctx context.Context, id string, input 
 		employee.Username = *input.Username
 	}
 	if input.Password != nil {
-		employee.Password = string(utils.HashPassword(*input.Password)) // hash the password before storing
+		employee.Password = utils.HashPassword(*input.Password) // hash the password before storing
 	}
 	if input.Email != nil {
 		employee.Email = *input.Email
@@ -133,7 +133,7 @@ func (r *mutationResolver) UpdateEmployee(ctx context.Context, id string, input 
 		FirstName:    employee.FirstName,
 		LastName:     employee.LastName,
 		Username:     employee.Username,
-		Password:     employee.Password,
+		Password:     string(employee.Password),
 		Email:        employee.Email,
 		Dob:          employee.DOB.Format("2006-01-02"),
 		DepartmentID: strconv.Itoa(int(employee.DepartmentID)),

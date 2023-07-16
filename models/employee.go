@@ -18,7 +18,7 @@ type Employee struct {
 	FirstName    string `gorm:"size:255;not null"`
 	LastName     string `gorm:"size:255;not null"`
 	Username     string `gorm:"size:255;not null;unique"`
-	Password     string `gorm:"size:255;not null"`
+	Password     []byte `gorm:"size:255;not null"`
 	Email        string `gorm:"size:255;not null;unique"`
 	DOB          time.Time
 	DepartmentID uint

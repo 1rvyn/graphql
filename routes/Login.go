@@ -1,18 +1,17 @@
 package routes
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"net/http"
+	"time"
 
+	"github.com/1rvyn/graphql-service/database"
+	"github.com/1rvyn/graphql-service/models"
+	"github.com/1rvyn/graphql-service/utils"
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
-	"golang.org/x/crypto/bcrypt"
 )
-
-type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
 
 type Credentials struct {
 	Username string `json:"username"`
@@ -29,24 +28,27 @@ func Login(router *mux.Router) http.HandlerFunc {
 			return
 		}
 
-		// Here, you should fetch the user from your database. For the purpose of this example,
-		// let's just use a dummy user.
-		user := User{
-			Username: "test",
-			Password: "$2a$10$N9qo8uLOickgx2ZMRZoHK.ApicY1A9OP7T3Q/SB0x61A5x8C9XKa", // password is "password"
+		// Fetch the user from the database
+		var user models.Employee
+		result := database.Database.Db.Where("username = ?", creds.Username).First(&user)
+		if result.Error != nil {
+			http.Error(w, "User not found", http.StatusUnauthorized)
+			return
 		}
 
-		// Compare the password with the hashed password stored in the database
-		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Password))
-		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// Compare the provided password with the hashed password stored in the database
+		hashedPassword := utils.HashPassword(creds.Password)
+
+		if subtle.ConstantTimeCompare(hashedPassword, user.Password) == 0 {
+			http.Error(w, "Invalid password", http.StatusUnauthorized)
 			return
 		}
 
 		// Declare the token with the algorithm used for signing, and the claims
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"username": creds.Username,
-			// You can add more claims here, like "role": user.Role
+			"exp":      jwt.TimeFunc().Add(time.Hour * 24).Unix(),
+			"position": user.Position, // this can allow us to be very custom in the middleware ie managers get higer perms that software engineers
 		})
 
 		// Create the JWT string
@@ -61,5 +63,8 @@ func Login(router *mux.Router) http.HandlerFunc {
 			Name:  "token",
 			Value: tokenString,
 		})
+
+		// return a success message
+		w.Write([]byte("Login successful"))
 	}
 }

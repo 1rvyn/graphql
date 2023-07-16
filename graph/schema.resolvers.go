@@ -45,7 +45,7 @@ func (r *mutationResolver) CreateEmployee(ctx context.Context, input model.NewEm
 		FirstName:    input.FirstName,
 		LastName:     input.LastName,
 		Username:     input.Username,
-		Password:     string(utils.HashPassword(input.Password)),
+		Password:     string(utils.HashPassword(input.Password)), // special JUICE (isnt this super clean?)
 		Email:        input.Email,
 		DOB:          dob,
 		DepartmentID: uint(departmentID),
@@ -99,7 +99,7 @@ func (r *mutationResolver) UpdateEmployee(ctx context.Context, id string, input 
 		employee.Username = *input.Username
 	}
 	if input.Password != nil {
-		employee.Password = *input.Password
+		employee.Password = string(utils.HashPassword(*input.Password)) // hash the password before storing
 	}
 	if input.Email != nil {
 		employee.Email = *input.Email

@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/1rvyn/graphql-service/database"
@@ -17,6 +18,8 @@ type Credentials struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+var secretKey = os.Getenv("HASH_KEY")
 
 func Login(router *mux.Router) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +55,7 @@ func Login(router *mux.Router) http.HandlerFunc {
 		})
 
 		// Create the JWT string
-		tokenString, err := token.SignedString([]byte("your-secret-key"))
+		tokenString, err := token.SignedString([]byte(secretKey))
 		if err != nil {
 			http.Error(w, "Error in generating token", http.StatusInternalServerError)
 			return

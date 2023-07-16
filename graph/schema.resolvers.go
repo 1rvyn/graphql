@@ -169,39 +169,98 @@ func (r *mutationResolver) DeleteEmployee(ctx context.Context, id string) (*bool
 	return &result, nil
 }
 
+// func (r *queryResolver) Employees(ctx context.Context) ([]*model.Employee, error) {
+// 	// Placeholder code
+// 	return []*model.Employee{
+// 		{
+// 			ID:           "1",
+// 			FirstName:    "John",
+// 			LastName:     "Doe",
+// 			Username:     "johndoe",
+// 			Password:     "password",
+// 			Email:        "john.doe@example.com",
+// 			Dob:          "2000-01-01",
+// 			DepartmentID: "1",
+// 			Position:     "Developer",
+// 			CreatedAt:    time.Now().String(),
+// 			UpdatedAt:    time.Now().String(),
+// 		},
+// 	}, nil
+// }
+
+// func (r *queryResolver) Employee(ctx context.Context, id string) (*model.Employee, error) {
+// 	// Placeholder code
+// 	return &model.Employee{
+// 		ID:           "1",
+// 		FirstName:    "John",
+// 		LastName:     "Doe",
+// 		Username:     "johndoe",
+// 		Password:     "password",
+// 		Email:        "john.doe@example.com",
+// 		Dob:          "2000-01-01",
+// 		DepartmentID: "1",
+// 		Position:     "Developer",
+// 		CreatedAt:    time.Now().String(),
+// 		UpdatedAt:    time.Now().String(),
+// 	}, nil
+// }
+
 func (r *queryResolver) Employees(ctx context.Context) ([]*model.Employee, error) {
-	// Placeholder code
-	return []*model.Employee{
-		{
-			ID:           "1",
-			FirstName:    "John",
-			LastName:     "Doe",
-			Username:     "johndoe",
-			Password:     "password",
-			Email:        "john.doe@example.com",
-			Dob:          "2000-01-01",
-			DepartmentID: "1",
-			Position:     "Developer",
-			CreatedAt:    time.Now().String(),
-			UpdatedAt:    time.Now().String(),
-		},
-	}, nil
+	// Fetch all employees from the database
+	var employees []*models.Employee
+	result := database.Database.Db.Find(&employees)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	// Convert slice of models.Employee to slice of model.Employee before returning
+	var modelEmployees []*model.Employee
+	for _, employee := range employees {
+		modelEmployees = append(modelEmployees, &model.Employee{
+			ID:           strconv.Itoa(int(employee.ID)),
+			FirstName:    employee.FirstName,
+			LastName:     employee.LastName,
+			Username:     employee.Username,
+			Password:     string(employee.Password),
+			Email:        employee.Email,
+			Dob:          employee.DOB.Format("2006-01-02"),
+			DepartmentID: strconv.Itoa(int(employee.DepartmentID)),
+			Position:     employee.Position,
+			CreatedAt:    employee.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:    employee.UpdatedAt.Format(time.RFC3339),
+		})
+	}
+
+	return modelEmployees, nil
 }
 
 func (r *queryResolver) Employee(ctx context.Context, id string) (*model.Employee, error) {
-	// Placeholder code
+	// Parse the ID to uint
+	employeeID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch the employee from the database
+	var employee models.Employee
+	result := database.Database.Db.First(&employee, uint(employeeID))
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	// Convert models.Employee to model.Employee before returning
 	return &model.Employee{
-		ID:           "1",
-		FirstName:    "John",
-		LastName:     "Doe",
-		Username:     "johndoe",
-		Password:     "password",
-		Email:        "john.doe@example.com",
-		Dob:          "2000-01-01",
-		DepartmentID: "1",
-		Position:     "Developer",
-		CreatedAt:    time.Now().String(),
-		UpdatedAt:    time.Now().String(),
+		ID:           strconv.Itoa(int(employee.ID)),
+		FirstName:    employee.FirstName,
+		LastName:     employee.LastName,
+		Username:     employee.Username,
+		Password:     string(employee.Password),
+		Email:        employee.Email,
+		Dob:          employee.DOB.Format("2006-01-02"),
+		DepartmentID: strconv.Itoa(int(employee.DepartmentID)),
+		Position:     employee.Position,
+		CreatedAt:    employee.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:    employee.UpdatedAt.Format(time.RFC3339),
 	}, nil
 }
 

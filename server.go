@@ -7,6 +7,8 @@ import (
 
 	"github.com/1rvyn/graphql-service/database"
 	"github.com/1rvyn/graphql-service/graph"
+	"github.com/1rvyn/graphql-service/middleware"
+
 	"github.com/1rvyn/graphql-service/routes"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -29,15 +31,20 @@ func main() {
 
 	setUpRoutes(router)
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	// srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
 
-	router.Handle("/employee", srv)
+	// router.Handle("/employee", srv)
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
+
 }
 
 func setUpRoutes(router *mux.Router) {
 	router.Handle("/login", routes.Login(router))
+
+	protected := router.PathPrefix("/protected").Subrouter()
+	protected.Use(middleware.JwtMiddleware)
+	protected.Handle("/employee", handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}})))
 }

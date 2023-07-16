@@ -67,7 +67,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Employee  func(childComplexity int, id string) int
-		Employees func(childComplexity int) int
+		Employees func(childComplexity int, filter *model.EmployeeFilter, sort *model.EmployeeSort, pagination *model.Pagination) int
 	}
 }
 
@@ -77,7 +77,7 @@ type MutationResolver interface {
 	DeleteEmployee(ctx context.Context, id string) (*bool, error)
 }
 type QueryResolver interface {
-	Employees(ctx context.Context) ([]*model.Employee, error)
+	Employees(ctx context.Context, filter *model.EmployeeFilter, sort *model.EmployeeSort, pagination *model.Pagination) ([]*model.Employee, error)
 	Employee(ctx context.Context, id string) (*model.Employee, error)
 }
 
@@ -226,7 +226,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Employees(childComplexity), true
+		args, err := ec.field_Query_employees_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Employees(childComplexity, args["filter"].(*model.EmployeeFilter), args["sort"].(*model.EmployeeSort), args["pagination"].(*model.Pagination)), true
 
 	}
 	return 0, false
@@ -236,7 +241,10 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputEmployeeFilter,
+		ec.unmarshalInputEmployeeSort,
 		ec.unmarshalInputNewEmployee,
+		ec.unmarshalInputPagination,
 		ec.unmarshalInputUpdateEmployee,
 	)
 	first := true
@@ -435,6 +443,39 @@ func (ec *executionContext) field_Query_employee_args(ctx context.Context, rawAr
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_employees_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.EmployeeFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalOEmployeeFilter2ᚖgithubᚗcomᚋ1rvynᚋgraphqlᚑserviceᚋgraphᚋmodelᚐEmployeeFilter(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filter"] = arg0
+	var arg1 *model.EmployeeSort
+	if tmp, ok := rawArgs["sort"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
+		arg1, err = ec.unmarshalOEmployeeSort2ᚖgithubᚗcomᚋ1rvynᚋgraphqlᚑserviceᚋgraphᚋmodelᚐEmployeeSort(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["sort"] = arg1
+	var arg2 *model.Pagination
+	if tmp, ok := rawArgs["pagination"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+		arg2, err = ec.unmarshalOPagination2ᚖgithubᚗcomᚋ1rvynᚋgraphqlᚑserviceᚋgraphᚋmodelᚐPagination(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pagination"] = arg2
 	return args, nil
 }
 
@@ -1184,7 +1225,7 @@ func (ec *executionContext) _Query_employees(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Employees(rctx)
+		return ec.resolvers.Query().Employees(rctx, fc.Args["filter"].(*model.EmployeeFilter), fc.Args["sort"].(*model.EmployeeSort), fc.Args["pagination"].(*model.Pagination))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1234,6 +1275,17 @@ func (ec *executionContext) fieldContext_Query_employees(ctx context.Context, fi
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Employee", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_employees_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -3216,6 +3268,109 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputEmployeeFilter(ctx context.Context, obj interface{}) (model.EmployeeFilter, error) {
+	var it model.EmployeeFilter
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"firstName", "lastName", "email", "dob", "departmentID", "position"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "firstName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("firstName"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FirstName = data
+		case "lastName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastName"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastName = data
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "dob":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dob"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Dob = data
+		case "departmentID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("departmentID"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DepartmentID = data
+		case "position":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("position"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Position = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputEmployeeSort(ctx context.Context, obj interface{}) (model.EmployeeSort, error) {
+	var it model.EmployeeSort
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"createdAt"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "createdAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAt"))
+			data, err := ec.unmarshalOSortDirection2ᚖgithubᚗcomᚋ1rvynᚋgraphqlᚑserviceᚋgraphᚋmodelᚐSortDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAt = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewEmployee(ctx context.Context, obj interface{}) (model.NewEmployee, error) {
 	var it model.NewEmployee
 	asMap := map[string]interface{}{}
@@ -3302,6 +3457,44 @@ func (ec *executionContext) unmarshalInputNewEmployee(ctx context.Context, obj i
 				return it, err
 			}
 			it.Position = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPagination(ctx context.Context, obj interface{}) (model.Pagination, error) {
+	var it model.Pagination
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"pageNumber", "pageSize"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "pageNumber":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageNumber"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PageNumber = data
+		case "pageSize":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageSize"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PageSize = data
 		}
 	}
 
@@ -4373,6 +4566,22 @@ func (ec *executionContext) marshalOEmployee2ᚖgithubᚗcomᚋ1rvynᚋgraphql�
 	return ec._Employee(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOEmployeeFilter2ᚖgithubᚗcomᚋ1rvynᚋgraphqlᚑserviceᚋgraphᚋmodelᚐEmployeeFilter(ctx context.Context, v interface{}) (*model.EmployeeFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputEmployeeFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOEmployeeSort2ᚖgithubᚗcomᚋ1rvynᚋgraphqlᚑserviceᚋgraphᚋmodelᚐEmployeeSort(ctx context.Context, v interface{}) (*model.EmployeeSort, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputEmployeeSort(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -4387,6 +4596,46 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 	}
 	res := graphql.MarshalID(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOPagination2ᚖgithubᚗcomᚋ1rvynᚋgraphqlᚑserviceᚋgraphᚋmodelᚐPagination(ctx context.Context, v interface{}) (*model.Pagination, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPagination(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOSortDirection2ᚖgithubᚗcomᚋ1rvynᚋgraphqlᚑserviceᚋgraphᚋmodelᚐSortDirection(ctx context.Context, v interface{}) (*model.SortDirection, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.SortDirection)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOSortDirection2ᚖgithubᚗcomᚋ1rvynᚋgraphqlᚑserviceᚋgraphᚋmodelᚐSortDirection(ctx context.Context, sel ast.SelectionSet, v *model.SortDirection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

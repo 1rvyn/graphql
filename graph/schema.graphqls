@@ -1,5 +1,5 @@
 type Query {
-  employees: [Employee!]!
+  employees(filter: EmployeeFilter, sort: EmployeeSort, pagination: Pagination): [Employee!]!
   employee(id: ID!): Employee
 }
 
@@ -43,4 +43,27 @@ input UpdateEmployee {
   dob: String
   departmentID: ID
   position: String
+}
+
+input EmployeeFilter {
+  firstName: String
+  lastName: String
+  email: String
+  dob: String
+  departmentID: ID
+  position: String
+}
+
+input EmployeeSort {
+  createdAt: SortDirection
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+input Pagination {
+  pageNumber: Int
+  pageSize: Int
 }

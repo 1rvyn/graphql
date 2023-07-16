@@ -6,8 +6,10 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/1rvyn/graphql-service/models"
+	"github.com/1rvyn/graphql-service/utils"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -30,9 +32,20 @@ var Database Dbinstance
 func ConnectDb() {
 	sqlserverconn := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%s;database=%s;encrypt=disable;", server, user, password, portStr, database)
 
-	db, err := gorm.Open(sqlserver.Open(sqlserverconn), &gorm.Config{})
+	var db *gorm.DB
+	var err error
+
+	for i := 0; i < 5; i++ { // 5 retries
+		db, err = gorm.Open(sqlserver.Open(sqlserverconn), &gorm.Config{})
+		if err == nil {
+			break // break the loop if connection is successful
+		}
+		log.Println("Unable to connect to the database, retrying in 5 seconds...")
+		time.Sleep(8 * time.Second) // wait for 5 seconds before retrying
+	}
+
 	if err != nil {
-		log.Fatal("failed to connect to the database \n", err.Error())
+		log.Fatal("Failed to connect to the database:", err)
 		os.Exit(2)
 	}
 
@@ -66,6 +79,30 @@ func ConnectDb() {
 			} else {
 				log.Println("Created department:", dept.Name)
 			}
+		}
+	}
+
+	// Create an initial employee
+	employee := models.Employee{
+		FirstName:    "George",
+		LastName:     "Test",
+		Username:     "george",
+		Password:     utils.HashPassword("password"),
+		Email:        "george@test.com",
+		DOB:          time.Now(), // set a proper date
+		DepartmentID: 1,          // ID of the department this employee belongs to
+		Position:     "Developer",
+	}
+
+	// Check if the employee already exists
+	var existingEmployee models.Employee
+	result := db.First(&existingEmployee, "username = ?", employee.Username)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		// If the employee doesn't exist, create it
+		if err := db.Create(&employee).Error; err != nil {
+			log.Println("Failed to create employee:", err)
+		} else {
+			log.Println("Created employee:", employee.Username)
 		}
 	}
 }

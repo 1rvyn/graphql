@@ -62,10 +62,7 @@ func Login(router *mux.Router) http.HandlerFunc {
 		}
 
 		// Finally, we set the client cookie for "token" as the JWT we just generated
-		http.SetCookie(w, &http.Cookie{
-			Name:  "token",
-			Value: tokenString,
-		})
+		w.Header().Set("Authorization", "Bearer "+tokenString)
 
 		// return a success message
 		w.Write([]byte("Login successful"))

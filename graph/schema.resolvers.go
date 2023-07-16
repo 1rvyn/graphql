@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/smtp"
 	"strconv"
 	"time"
@@ -63,11 +64,52 @@ func (r *mutationResolver) CreateEmployee(ctx context.Context, input model.NewEm
 		return nil, err
 	}
 
-	// Send welcome email
-	auth := smtp.PlainAuth("", "", "", "localhost")
-	err = smtp.SendMail("localhost:1025", auth, "irvynhall@gmail.org", []string{employee.Email}, []byte("Welcome to the company!"))
+	// Connect to the SMTP server.
+	conn, err := net.Dial("tcp", "mail:1025")
 	if err != nil {
-		log.Println("Failed to send welcome email:", err)
+		log.Println("Failed to connect to mail server:", err)
+		return nil, err
+	}
+
+	// Create a new unencrypted SMTP client.
+	c, err := smtp.NewClient(conn, "mail")
+	if err != nil {
+		log.Println("Failed to create SMTP client:", err)
+		return nil, err
+	}
+
+	// Set the sender and recipient.
+	if err := c.Mail("testing@takehomesecuri.com"); err != nil {
+		log.Println("Failed to set mail sender:", err)
+		return nil, err
+	}
+	if err := c.Rcpt(employee.Email); err != nil {
+		log.Println("Failed to set mail recipient:", err)
+		return nil, err
+	}
+
+	// Send the email body.
+	wc, err := c.Data()
+	if err != nil {
+		log.Println("Failed to get mail data writer:", err)
+		return nil, err
+	}
+	_, err = fmt.Fprintf(wc, "Welcome to the company!")
+	if err != nil {
+		log.Println("Failed to write mail data:", err)
+		return nil, err
+	}
+	err = wc.Close()
+	if err != nil {
+		log.Println("Failed to close mail data writer:", err)
+		return nil, err
+	}
+
+	// Close the SMTP connection.
+	err = c.Quit()
+	if err != nil {
+		log.Println("Failed to close SMTP connection:", err)
+		return nil, err
 	}
 
 	// Convert models.Employee to model.Employee before returning
